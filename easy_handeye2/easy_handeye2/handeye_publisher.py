@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rclpy
+from rclpy.node import Node
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import ParameterType, ParameterDescriptor
 import tf2_ros
@@ -8,7 +9,7 @@ import geometry_msgs.msg
 from easy_handeye2.handeye_calibration import load_calibration
 
 
-class HandeyePublisher(rclpy.node.Node):
+class HandeyePublisher(Node):
     def __init__(self):
         super().__init__('handeye_publisher')
 
@@ -29,12 +30,15 @@ class HandeyePublisher(rclpy.node.Node):
         self.broadcaster = tf2_ros.StaticTransformBroadcaster(self)
         self.static_transformStamped = geometry_msgs.msg.TransformStamped()
 
-        self.static_transformStamped.header.stamp = self.get_clock().now().to_msg()
         self.static_transformStamped.header.frame_id = orig
         self.static_transformStamped.child_frame_id = dest
 
         self.static_transformStamped.transform = self.calibration.transform
 
+        self.send_transform_timer = self.create_timer(0.1, self.send_transform)
+
+    def send_transform(self):
+        self.static_transformStamped.header.stamp = self.get_clock().now().to_msg()
         self.broadcaster.sendTransform(self.static_transformStamped)
 
 
