@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, EqualsSubstitution
 from launch_ros.actions import Node
 
@@ -12,12 +13,12 @@ def generate_launch_description():
 
     calibration_type = LaunchConfiguration('calibration_type')
     node_dummy_calib_eih = Node(package='tf2_ros', executable='static_transform_publisher', name='dummy_publisher',
-                                condition=EqualsSubstitution(calibration_type, 'eye_in_hand'),
+                                condition=IfCondition(EqualsSubstitution(calibration_type, 'eye_in_hand')),
                                 arguments=f'--x 0 --y 0 --z 0.1 --qx 0 --qy 0 --qz 0 --qw 1'.split(' ') + ['--frame-id', LaunchConfiguration('robot_effector_frame'),
                                                                                                            '--child-frame-id', LaunchConfiguration('tracking_base_frame')])
 
     node_dummy_calib_eob = Node(package='tf2_ros', executable='static_transform_publisher', name='dummy_publisher',
-                                condition=EqualsSubstitution(calibration_type, 'eye_on_base'),
+                                condition=IfCondition(EqualsSubstitution(calibration_type, 'eye_on_base')),
                                 arguments=f'--x 1 --y 0 --z 0 --qx 0 --qy 0 --qz 0 --qw 1'.split(' ') + ['--frame-id', LaunchConfiguration('robot_base_frame'),
                                                                                                          '--child-frame-id', LaunchConfiguration('tracking_base_frame')])
 
